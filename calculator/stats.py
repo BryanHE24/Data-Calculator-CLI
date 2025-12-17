@@ -1,53 +1,94 @@
-import click
-from calculator.utils import load_data
-# Import statistical functions
-from calculator.stats import ( 
-    calculate_mean, 
-    calculate_median, 
-    calculate_mode,
-    calculate_std_dev, 
-    calculate_variance
-)
-# Define CLI using Click
-@click.group()
-def main():
-    """Data Calculator CLI: Perform stats on CSV files."""
-    pass
+from typing import List
+import math
 
-# Simple verification command
-@main.command()
-def verify():
-    """Simple command to check if CLI is working."""
-    click.echo("✅ CLI entry point is functional!")
+# ==========================================
+# MODULE: Statistics Logic
+# RESPONSIBILITY: Pure mathematical functions.
+# ==========================================
 
-# Statistics command
-@main.command()
-@click.option("--file", required=True, type=click.Path(exists=True), help="Path to CSV file.")
-@click.option("--column", default=None, help="Column name to analyze (if multi-column).")
-def stats(file, column):
-    """Calculate descriptive statistics for a dataset."""
-    try:
-        # 1. Load Data (The Hands)
-        data = load_data(file, column)
+# --- Descriptive Statistics ---
 
-        # 2. Perform Math (The Brain)
-        mean_val = calculate_mean(data)
-        median_val = calculate_median(data)
-        mode_val = calculate_mode(data)
-        std_dev = calculate_std_dev(data)
-        variance = calculate_variance(data)
+def calculate_mean(data: List[float]) -> float:
+    """Calculates the arithmetic mean (average)."""
+    if not data:
+        raise ValueError("Cannot calculate mean of an empty list.")
+    return sum(data) / len(data)
 
-        # 3. Report Results (The Face)
-        click.echo(f"📊 Statistics for {file}:")
-        click.echo(f"--------------------------")
-        click.echo(f"Mean:      {mean_val:.4f}")
-        click.echo(f"Median:    {median_val:.4f}")
-        click.echo(f"Mode:      {mode_val}")
-        click.echo(f"Std Dev:   {std_dev:.4f}")
-        click.echo(f"Variance:  {variance:.4f}")
-    # Handle exceptions
-    except Exception as e:
-        click.secho(f"Error: {str(e)}", fg="red")
+def calculate_median(data: List[float]) -> float:
+    """Calculates the median (middle value)."""
+    if not data:
+        raise ValueError("Cannot calculate median of an empty list.")
+    
+    sorted_data = sorted(data)
+    n = len(sorted_data)
+    mid = n // 2
+    
+    if n % 2 == 1:
+        return sorted_data[mid]
+    else:
+        return (sorted_data[mid - 1] + sorted_data[mid]) / 2.0
 
-if __name__ == "__main__":
-    main()
+def calculate_mode(data: List[float]) -> List[float]:
+    """Calculates the mode (most frequent value)."""
+    if not data:
+        raise ValueError("Cannot calculate mode of an empty list.")
+    
+    frequency = {}
+    for item in data:
+        frequency[item] = frequency.get(item, 0) + 1
+    
+    max_count = max(frequency.values())
+    return [k for k, v in frequency.items() if v == max_count]
+
+def calculate_variance(data: List[float]) -> float:
+    """Calculates the Population Variance."""
+    if not data:
+        raise ValueError("Cannot calculate variance of an empty list.")
+    if len(data) < 2:
+         return 0.0
+         
+    mean = calculate_mean(data)
+    return sum((x - mean) ** 2 for x in data) / len(data)
+
+def calculate_std_dev(data: List[float]) -> float:
+    """Calculates the Population Standard Deviation."""
+    return math.sqrt(calculate_variance(data))
+
+# --- Data Normalization (New for Phase 6) ---
+
+def normalize_min_max(data: List[float]) -> List[float]:
+    """
+    Scales data to the range [0, 1].
+    Formula: (x - min) / (max - min)
+    """
+    if not data:
+        raise ValueError("Cannot normalize an empty list.")
+    
+    min_val = min(data)
+    max_val = max(data)
+    
+    # Avoid division by zero if all numbers are identical
+    if min_val == max_val:
+        return [0.0] * len(data)
+        
+    return [(x - min_val) / (max_val - min_val) for x in data]
+
+def normalize_z_score(data: List[float]) -> List[float]:
+    """
+    Scales data using Z-Score (Standard Score).
+    Formula: (x - mean) / std_dev
+    """
+    if not data:
+        raise ValueError("Cannot normalize an empty list.")
+    
+    if len(data) < 2:
+        return [0.0] * len(data)
+
+    mean = calculate_mean(data)
+    std_dev = calculate_std_dev(data)
+    
+    # Avoid division by zero
+    if std_dev == 0:
+        return [0.0] * len(data)
+        
+    return [(x - mean) / std_dev for x in data]
