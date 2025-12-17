@@ -1,0 +1,9 @@
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md
+
+.early.coveragevenv/
+__pycache__/
+*.pyc
+.DS_Store
+results.json
