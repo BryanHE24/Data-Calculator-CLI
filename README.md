@@ -15,7 +15,7 @@ A professional-grade command-line tool for statistical analysis and matrix opera
 
 ```bash
 # 1. Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/BryanHE24/Data-Calculator-CLI.git
 cd data_calculator
 
 # 2. Create Virtual Environment
